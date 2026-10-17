@@ -37,9 +37,10 @@ mark.todo { background: var(--todo); padding: 0 .2em; border-radius: 3px; }
   font-family: var(--mono); font-weight: 500; font-size: 22px; letter-spacing: -0.02em;
   color: var(--ink); text-decoration: none;
 }
-.brand .u { color: var(--pen); animation: blink 1.1s steps(1) infinite; }
+.brand .u { color: var(--pen); animation: blinkSoft 1.2s steps(1) infinite; }
 .top .q { font-size: 15px; }
 @keyframes blink { 50% { opacity: 0; } }
+@keyframes blinkSoft { 50% { opacity: .3; } }
 
 /* герой */
 .hero { padding: 24px 0 40px; }
@@ -82,8 +83,11 @@ h1 em { font-style: italic; color: var(--pen); }
 .micro { font-size: 14px; color: var(--graphite); text-align: center; margin: 10px 0 0; }
 
 @media (min-width: 760px) {
-  .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 36px; align-items: start; }
+  .hero.wrap { max-width: 940px; }
+  .hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: start; }
   .hero { padding-top: 40px; }
+  .hero h1 { font-size: 46px; }
+  .hero .cta { max-width: 640px; margin-left: auto; margin-right: auto; }
   .tee { height: 260px; }
 }
 
