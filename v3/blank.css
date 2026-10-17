@@ -1,0 +1,116 @@
+/* _blank — токены и база. Источник правды: DESIGN.md в корне репо.
+   Для сайта копируется как есть: cp design/blank.css site/blank.css */
+
+:root {
+  /* цвет: белый — пустота, чернила — буквы и цифры человека, синий — синтетика (ИИ) */
+  --white: #FFFFFF;
+  --ink: #0A0A0A;
+  --synthetic: #1D2BFF;
+  --ink-hover: #262626;
+  --ink-muted: #6B6B6B;
+  --ink-faint: #B3B3B3;
+  --hairline: #E6E6E6;
+
+  /* шрифт: одна гарнитура, два начертания */
+  --font-sans: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --display: clamp(2.5rem, 7.5vw, 6rem);
+  --title: clamp(1.75rem, 3.6vw, 2.75rem);
+  --body: 1.1875rem;
+  --small: 0.9375rem;
+  --label: 0.8125rem;
+  --measure: 36em;
+
+  /* воздух */
+  --s-hair: 4px; --s-xs: 8px; --s-sm: 16px; --s-md: 24px;
+  --s-lg: 40px; --s-xl: 64px; --s-2xl: 104px; --s-3xl: 168px;
+  --gutter: clamp(20px, 4vw, 48px);
+  --max: 1280px;
+
+  /* движение: три движения, одна кривая */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --t-press: 120ms; --t-ui: 240ms; --t-reveal: 700ms;
+  --blink: 1.06s;
+
+  /* форма: прямые углы, пилюля только у кнопки */
+  --radius-pill: 999px;
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--white); color: var(--ink);
+  font: 400 var(--body)/1.45 var(--font-sans);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  caret-color: var(--synthetic);
+}
+::selection { background: var(--ink); color: var(--white); }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+img, svg, video { display: block; max-width: 100%; }
+p { margin: 0; }
+
+/* инверсия: только экран целиком */
+.inverted { background: var(--ink); color: var(--white); }
+.inverted ::selection { background: var(--white); color: var(--ink); }
+.inverted :focus-visible { outline-color: var(--white); }
+
+/* шрифтовые роли */
+.t-display { font: 500 var(--display)/1 var(--font-sans); letter-spacing: -0.03em; text-wrap: balance; }
+.t-title   { font: 500 var(--title)/1.1 var(--font-sans); letter-spacing: -0.02em; text-wrap: balance; }
+.t-body    { font: 400 var(--body)/1.45 var(--font-sans); max-width: var(--measure); }
+.t-small   { font: 400 var(--small)/1.45 var(--font-sans); }
+.t-label   { font: 400 var(--label)/1.5 var(--font-mono); color: var(--ink-muted); }
+.t-num     { font: 400 var(--body)/1.45 var(--font-mono); font-variant-numeric: tabular-nums; }
+.inverted .t-label { color: var(--ink-faint); }
+
+/* логотип и курсор: подчёркивание всегда синее */
+.wordmark {
+  font: 500 1.375rem/1 var(--font-mono); letter-spacing: -0.02em;
+  color: inherit; text-decoration: none; white-space: nowrap;
+}
+.u { color: var(--synthetic); animation: blink var(--blink) steps(1, end) infinite; }
+@keyframes blink { 50% { opacity: 0.2; } }
+
+/* элементы */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 56px; padding: 0 28px; border-radius: var(--radius-pill);
+  background: var(--ink); color: var(--white); border: 1px solid var(--ink);
+  font: 500 var(--body)/1 var(--font-sans); text-decoration: none; white-space: nowrap;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background var(--t-ui) var(--ease-out), transform var(--t-press) var(--ease-out);
+}
+.btn:hover { background: var(--ink-hover); border-color: var(--ink-hover); }
+.btn:active { transform: scale(0.98); }
+.btn--ghost { background: transparent; color: var(--ink); border-color: var(--ink); }
+.btn--ghost:hover { background: transparent; color: var(--ink-muted); border-color: var(--ink-muted); }
+.inverted .btn { background: var(--white); color: var(--ink); border-color: var(--white); }
+.inverted .btn:hover { background: var(--hairline); border-color: var(--hairline); }
+.inverted .btn--ghost { background: transparent; color: var(--white); }
+
+.link {
+  color: inherit; text-decoration: underline;
+  text-decoration-thickness: 1px; text-underline-offset: 4px;
+  transition: color var(--t-ui) var(--ease-out);
+}
+.link:hover { color: var(--ink-muted); }
+
+.input-line {
+  width: 100%; max-width: var(--measure); padding: 12px 0; margin: 0;
+  border: 0; border-bottom: 1px solid var(--ink); border-radius: 0;
+  background: transparent; color: inherit;
+  font: 400 var(--body)/1.45 var(--font-mono);
+}
+.input-line::placeholder { color: var(--synthetic); }
+.input-line:focus { outline: none; border-bottom-width: 2px; padding-bottom: 11px; }
+
+.hairline { border: 0; border-top: 1px solid var(--hairline); margin: 0; }
+
+.ic { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: square; stroke-linejoin: miter; }
+
+@media (prefers-reduced-motion: reduce) {
+  .u { animation: none; }
+  .btn, .link { transition: none; }
+  .btn:active { transform: none; }
+}

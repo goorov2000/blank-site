@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>_blank</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="blank.css">
+<style>
+/* Механика — по промпту MotionSites «Cast and Render» (бесплатный, открыт 17.10.2026):
+   фоновое видео закреплено и листается скроллом покадрово, панели текста проявляются поверх,
+   страница визуально не двигается. Внешний вид — по DESIGN.md. */
+html { overflow-x: hidden; }
+body { overflow-x: hidden; }
+
+/* сцена: видео на весь экран */
+.stage { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: var(--white); }
+.stage video { position: absolute; top: 50%; left: 50%; width: 100%; height: 100%; transform: translate(-50%, -50%) scale(1.02); object-fit: cover; will-change: transform; }
+.veil { position: absolute; inset: 0; pointer-events: none; background:
+  linear-gradient(to bottom, rgba(255,255,255,.72) 0%, rgba(255,255,255,0) 22%, rgba(255,255,255,0) 78%, rgba(255,255,255,.76) 100%); }
+@media (max-width: 900px) { .veil { background:
+  linear-gradient(to bottom, rgba(255,255,255,.82) 0%, rgba(255,255,255,.14) 26%, rgba(255,255,255,.14) 74%, rgba(255,255,255,.84) 100%); } }
+
+/* синяя линия прогресса: синтетика ведёт */
+.meter { position: fixed; top: 0; left: 0; z-index: 50; height: 2px; width: 100%; transform: scaleX(0); transform-origin: 0 50%; background: var(--synthetic); }
+
+/* шапка и подвал закреплены */
+.chrome { position: fixed; left: 0; right: 0; top: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: var(--s-sm);
+  padding: max(16px, calc(env(safe-area-inset-top, 0px) + 12px)) var(--gutter) 16px; }
+.chrome .wordmark { font-size: clamp(1.75rem, 3vw, 2.5rem); }
+.chrome .btn { height: 44px; padding: 0 20px; font-size: var(--small); }
+.foot { position: fixed; bottom: 0; left: 0; right: 0; z-index: 40; display: flex; justify-content: center; gap: var(--s-md); flex-wrap: wrap;
+  padding: 14px var(--gutter) max(16px, calc(env(safe-area-inset-bottom, 0px) + 12px)); font: 400 var(--label)/1.5 var(--font-mono); color: var(--ink-muted); pointer-events: none; }
+.foot a { color: inherit; pointer-events: auto; }
+
+/* панели: три мысли, по одной на экран */
+.panels { position: fixed; inset: 0; z-index: 20; pointer-events: none; }
+.panel { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  padding: max(112px, calc(env(safe-area-inset-top, 0px) + 96px)) var(--gutter) max(104px, calc(env(safe-area-inset-bottom, 0px) + 88px));
+  opacity: 0; will-change: opacity, transform; }
+.panel h1 { margin: 0; font: 500 clamp(2.25rem, 7vw, 6rem)/1 var(--font-sans); letter-spacing: -0.03em; max-width: 12ch; text-wrap: balance; }
+.panel h1 .u { color: var(--synthetic); }
+.panel .sub { margin-top: clamp(16px, 2.2vw, 28px); font: 400 clamp(1rem, 1.3vw, 1.25rem)/1.45 var(--font-sans); color: var(--ink-muted); max-width: 36ch; text-wrap: pretty; }
+.panel .cta { margin-top: clamp(28px, 3.4vw, 44px); pointer-events: auto; display: grid; gap: var(--s-xs); justify-items: center; }
+.panel .cta .t-label { color: var(--ink-muted); }
+
+/* дорожка: единственное, что даёт странице высоту */
+.track { position: relative; z-index: 1; height: 560vh; min-height: 3200px; }
+
+/* загрузка: курсор ждёт */
+.boot { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; background: var(--white); transition: opacity .7s var(--ease-out), visibility .7s; }
+.boot.done { opacity: 0; visibility: hidden; }
+.boot div { display: grid; gap: var(--s-sm); justify-items: center; }
+.boot .bar { width: 160px; height: 1px; background: var(--hairline); overflow: hidden; }
+.boot .bar i { display: block; height: 100%; width: 100%; background: var(--synthetic); transform: scaleX(0); transform-origin: 0 50%; }
+.boot .big { font: 500 clamp(2.5rem, 8vw, 5rem)/1 var(--font-mono); letter-spacing: -0.02em; }
+
+@media (max-width: 720px) {
+  .chrome .btn { height: 40px; padding: 0 16px; font-size: 0.875rem; }
+  .panel h1 { max-width: 11ch; font-size: clamp(1.9rem, 9.5vw, 3.25rem); }
+  .panel .sub { max-width: 30ch; }
+  .foot { font-size: 0.6875rem; }
+}
+@media (max-width: 420px) { .chrome .btn span.long { display: none; } }
+@media (prefers-reduced-motion: reduce) { .boot { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="boot" id="boot" aria-hidden="true"><div><span class="big"><span class="u">_</span></span><div class="bar"><i id="bootBar"></i></div><span class="t-label" id="bootPct">0 %</span></div></div>
+
+<div class="stage">
+  <video id="clip" muted playsinline preload="auto" disablepictureinpicture></video>
+  <div class="veil"></div>
+</div>
+<i class="meter" id="meter"></i>
+
+<header class="chrome">
+  <a class="wordmark" href="#"><span class="u">_</span>blank</a>
+  <a class="btn" href="#">Забронировать<span class="long">&nbsp;место</span>&nbsp;—&nbsp;2&nbsp;990&nbsp;₽</a>
+</header>
+
+<main class="panels">
+  <section class="panel" data-panel>
+    <h1>Вы знаете, что вам не&nbsp;нравится<span class="u">_</span></h1>
+    <p class="sub">Этого достаточно, чтобы создать своё.</p>
+    <div class="cta"><a class="btn" href="#">Забронировать место — 2 990 ₽</a><span class="t-label">закрытый доступ · первая волна 1 ноября</span></div>
+  </section>
+  <section class="panel" data-panel>
+    <h1>От идеи до звонка в&nbsp;дверь — неделя.</h1>
+    <p class="sub">Вы описываете. Система показывает вещь, строит лекало, выбирает производство. Курьер привозит.</p>
+    <div class="cta"><a class="btn btn--ghost" href="#">Спросить в Telegram</a></div>
+  </section>
+  <section class="panel" data-panel>
+    <h1>Одежда нового поколения. Вы создаёте её сами.</h1>
+    <p class="sub">Депозит 2 990 ₽ засчитывается в футболку и возвращается по одному сообщению.</p>
+    <div class="cta"><a class="btn" href="#">Забронировать место — 2 990 ₽</a><span class="t-label">1 ноября · депозит возвращается</span></div>
+  </section>
+</main>
+
+<footer class="foot"><span>закрытый доступ · 1 ноября</span><a href="#">оферта</a><a href="#">telegram</a></footer>
+
+<div class="track"></div>
+
+<script>
+(function () { "use strict";
+  /* ВИДЕО. Сейчас — демонстрационный ролик из промпта Cast and Render (1920×1080, 10,04 с, 241 кадр,
+     all-intra: каждый кадр ключевой, поэтому скролл попадает в точный кадр мгновенно). Не для публикации.
+     Когда будет наше: положить рядом tee.mp4 (перекодировать в all-intra, см. docs/video-brief.md) и заменить строку. */
+  var VIDEO_URL = "https://d2ol7oe51mr4n9.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/45567745-d826-44a2-a5ce-7ef670944e60.mp4";
+  if (location.search.indexOf("local") > -1) VIDEO_URL = "tee.mp4";
+
+  var clip = document.getElementById("clip"), boot = document.getElementById("boot"),
+      bootBar = document.getElementById("bootBar"), bootPct = document.getElementById("bootPct"),
+      meter = document.getElementById("meter"),
+      panels = [].slice.call(document.querySelectorAll("[data-panel]"));
+
+  /* Каждая панель владеет куском скролла: [вход-начало, вход-конец, уход-начало, уход-конец] в долях страницы.
+     Между панелями — мёртвые зоны, только видео: две мысли никогда не читаются одновременно. */
+  var CUES = [[0.00, 0.00, 0.15, 0.23], [0.35, 0.43, 0.57, 0.65], [0.77, 0.85, 1.10, 1.20]];
+  var DRIFT = 22;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+  function smooth(t) { return t * t * (3 - 2 * t); }
+  function ramp(p, a, b) { if (b <= a) return p >= b ? 1 : 0; return smooth(clamp((p - a) / (b - a), 0, 1)); }
+
+  var progress = 0, seekTo = 0, seekAt = 0, duration = 0, ready = false;
+
+  function readScroll() {
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    progress = max > 0 ? clamp(window.pageYOffset / max, 0, 1) : 0;
+    if (duration) seekTo = progress * duration;
+  }
+  function paint() {
+    meter.style.transform = "scaleX(" + progress + ")";
+    for (var i = 0; i < panels.length; i++) {
+      var c = CUES[i], enter = ramp(progress, c[0], c[1]), leave = ramp(progress, c[2], c[3]);
+      var o = enter * (1 - leave), y = (1 - enter) * DRIFT - leave * DRIFT;
+      panels[i].style.opacity = o;
+      panels[i].style.transform = "translate3d(0," + (reduce ? 0 : y) + "px,0)";
+      panels[i].style.pointerEvents = o > 0.6 ? "auto" : "none";
+    }
+  }
+  function frame() {
+    if (ready && duration) {
+      var gap = seekTo - seekAt;
+      if (Math.abs(gap) > 0.0008) {
+        seekAt += gap * 0.115; /* плавная догонка вместо прыжка — это и делает скраб мягким */
+        if (clip.readyState >= 2 && !clip.seeking) { try { clip.currentTime = seekAt; } catch (e) {} }
+      }
+    }
+    paint();
+    requestAnimationFrame(frame);
+  }
+
+  function setProgress(f) { bootBar.style.transform = "scaleX(" + f + ")"; bootPct.textContent = Math.round(f * 100) + " %"; }
+  var started = false;
+  function start() { if (started) return; started = true; ready = true; boot.classList.add("done"); readScroll(); seekAt = seekTo; }
+  var attached = false;
+  function attach(src) {
+    if (attached) return; attached = true;
+    clip.addEventListener("loadedmetadata", function () { duration = clip.duration || 0; clip.pause(); readScroll(); seekAt = seekTo; try { clip.currentTime = seekAt; } catch (e) {} });
+    clip.addEventListener("loadeddata", start);
+    clip.addEventListener("canplaythrough", start);
+    clip.addEventListener("error", start);
+    clip.src = src; clip.load();
+    setTimeout(start, 12000);
+  }
+  /* Сначала качаем ролик целиком как blob: перемотка внутри буфера мгновенная, а range-запросы по сети — слайд-шоу. */
+  function preload() {
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var bail = setTimeout(function () { if (!attached) { if (ctrl) ctrl.abort(); setProgress(1); attach(VIDEO_URL); } }, 15000);
+    fetch(VIDEO_URL, ctrl ? { signal: ctrl.signal } : {}).then(function (res) {
+      if (!res.ok || !res.body) throw new Error("bad response");
+      var total = +res.headers.get("content-length") || 0, got = 0, chunks = [], reader = res.body.getReader();
+      return new Promise(function (resolve, reject) {
+        (function pump() {
+          reader.read().then(function (r) {
+            if (r.done) return resolve(new Blob(chunks, { type: "video/mp4" }));
+            chunks.push(r.value); got += r.value.length;
+            setProgress(total ? got / total : Math.min(got / 11e6, 0.95));
+            pump();
+          }).catch(reject);
+        })();
+      });
+    }).then(function (blob) { clearTimeout(bail); setProgress(1); attach(URL.createObjectURL(blob)); })
+      .catch(function () { clearTimeout(bail); setProgress(1); attach(VIDEO_URL); });
+  }
+  /* iOS не рисует кадр видео, которое ни разу не играло: один раз запускаем и сразу ставим на паузу. */
+  function unlock() { var p = clip.play(); if (p && p.then) p.then(function () { clip.pause(); }).catch(function () {}); else clip.pause(); }
+  ["touchstart", "pointerdown", "wheel", "keydown"].forEach(function (ev) { window.addEventListener(ev, unlock, { once: true, passive: true }); });
+
+  window.addEventListener("scroll", readScroll, { passive: true });
+  window.addEventListener("resize", readScroll);
+  readScroll(); paint(); preload(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
