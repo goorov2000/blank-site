@@ -1,6 +1,6 @@
 # Сайт _blank
 
-Статичный сайт без сборки. Хостинг: GitHub Pages, публичный репозиторий goorov2000/blank-site. Адрес: https://goorov2000.github.io/blank-site/
+Статичный сайт без сборки. Хостинг: GitHub Pages, публичный репозиторий goorov2000/blank-site. Адрес: https://feeltheblank.store (домен на Рег.ру, файл `CNAME`); старый адрес goorov2000.github.io/blank-site перенаправляет туда.
 
 ## Поменять ссылки
 
