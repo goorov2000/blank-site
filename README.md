@@ -16,6 +16,8 @@ git subtree push --prefix site site-origin main
 
 Страница обновляется за одну-две минуты.
 
+Если домен меняли в настройках GitHub Pages, GitHub сам коммитит `CNAME` в blank-site, и subtree push отклоняют. Тогда, если руками в blank-site ничего не правили: `git push site-origin $(git subtree split --prefix site HEAD):main --force`.
+
 ## Свой домен
 
 1. Купить домен (например theblank.ru).
