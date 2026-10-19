@@ -3,8 +3,8 @@
 const CONFIG = {
   // Многоразовая платёжная ссылка CloudPayments (2 990 ₽)
   payUrl: 'https://PLACEHOLDER-cloudpayments-link',
-  // Ник Telegram-аккаунта бренда без @
-  tgUser: 'feelthe_blank',
+  // Ник Telegram, куда пишут люди, без @ (личный аккаунт Гриши с Premium)
+  tgUser: 'troechkin',
   // Подстановки в чат (см. content/telegram-setup.md)
   tgPaidText: 'Оплатил(а) место в первой волне _blank',
   tgQuestionText: 'Вопрос про _blank: ',
